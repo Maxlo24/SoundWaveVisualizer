@@ -133,7 +133,7 @@ GameObject:
   - component: {fileID: 170921777}
   m_Layer: 0
   m_Name: Sphere
-  m_TagString: Untagged
+  m_TagString: Tile
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -244,7 +244,7 @@ GameObject:
   - component: {fileID: 233258348}
   m_Layer: 0
   m_Name: Cube (1)
-  m_TagString: Untagged
+  m_TagString: Tile
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -355,7 +355,7 @@ GameObject:
   - component: {fileID: 518216349}
   m_Layer: 0
   m_Name: Cube
-  m_TagString: Untagged
+  m_TagString: Tile
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -451,6 +451,58 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1340050534}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &803946067
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 803946069}
+  - component: {fileID: 803946068}
+  m_Layer: 0
+  m_Name: BlueEchoSource
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &803946068
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 803946067}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 395157da9ef314d538d6025566d97892, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EcholocationController
+  rayCount: 5000
+  maxDistance: 30
+  pointLifetime: 3
+  maxWaves: 5
+  computeShader: {fileID: 7200000, guid: f1c054ab314be44b6a6d5292b83de4c6, type: 3}
+  pointMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+  pointMaterial: {fileID: 2100000, guid: 0ae9d5fd2e04c4218b494c570c3e5cc2, type: 2}
+  propagationSpeed: 100
+--- !u!4 &803946069
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 803946067}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 3.9, y: 2.03, z: -12.38}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &883625362
 GameObject:
@@ -650,6 +702,58 @@ Transform:
   - {fileID: 883625363}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 45, z: 0}
+--- !u!1 &1186381180
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1186381182}
+  - component: {fileID: 1186381181}
+  m_Layer: 0
+  m_Name: RedEchoSource (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1186381181
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1186381180}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 395157da9ef314d538d6025566d97892, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EcholocationController
+  rayCount: 5000
+  maxDistance: 30
+  pointLifetime: 3
+  maxWaves: 5
+  computeShader: {fileID: 7200000, guid: f1c054ab314be44b6a6d5292b83de4c6, type: 3}
+  pointMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+  pointMaterial: {fileID: 2100000, guid: f23f99bca8ee949a1843df83e182b260, type: 2}
+  propagationSpeed: 100
+--- !u!4 &1186381182
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1186381180}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -16.66, y: 4.72, z: -8.72}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1340050533
 GameObject:
   m_ObjectHideFlags: 0
@@ -700,7 +804,7 @@ GameObject:
   - component: {fileID: 1438992176}
   m_Layer: 0
   m_Name: Floor
-  m_TagString: Untagged
+  m_TagString: Tile
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -812,7 +916,7 @@ GameObject:
   - component: {fileID: 1680522634}
   m_Layer: 0
   m_Name: Cube (2)
-  m_TagString: Untagged
+  m_TagString: Tile
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -920,7 +1024,7 @@ GameObject:
   - component: {fileID: 1742890770}
   - component: {fileID: 1742890771}
   m_Layer: 0
-  m_Name: EchoSource
+  m_Name: GreenEchoSource
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -953,9 +1057,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 395157da9ef314d538d6025566d97892, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EcholocationController
-  rayCount: 10000
+  rayCount: 5000
   maxDistance: 30
-  pointLifetime: 0.4
+  pointLifetime: 3
+  maxWaves: 5
   computeShader: {fileID: 7200000, guid: f1c054ab314be44b6a6d5292b83de4c6, type: 3}
   pointMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
   pointMaterial: {fileID: 2100000, guid: b83e3020a80b04260ab81f313bb6b00d, type: 2}
@@ -1087,11 +1192,119 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &1954056597
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1954056599}
+  - component: {fileID: 1954056598}
+  m_Layer: 0
+  m_Name: RedEchoSource
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1954056598
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954056597}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 395157da9ef314d538d6025566d97892, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EcholocationController
+  rayCount: 5000
+  maxDistance: 30
+  pointLifetime: 3
+  maxWaves: 5
+  computeShader: {fileID: 7200000, guid: f1c054ab314be44b6a6d5292b83de4c6, type: 3}
+  pointMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+  pointMaterial: {fileID: 2100000, guid: f23f99bca8ee949a1843df83e182b260, type: 2}
+  propagationSpeed: 100
+--- !u!4 &1954056599
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1954056597}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -3.83, y: 4.72, z: 11.42}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2029147041
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2029147043}
+  - component: {fileID: 2029147042}
+  m_Layer: 0
+  m_Name: BlueEchoSource (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2029147042
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2029147041}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 395157da9ef314d538d6025566d97892, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EcholocationController
+  rayCount: 5000
+  maxDistance: 30
+  pointLifetime: 3
+  maxWaves: 5
+  computeShader: {fileID: 7200000, guid: f1c054ab314be44b6a6d5292b83de4c6, type: 3}
+  pointMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+  pointMaterial: {fileID: 2100000, guid: 0ae9d5fd2e04c4218b494c570c3e5cc2, type: 2}
+  propagationSpeed: 100
+--- !u!4 &2029147043
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2029147041}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 14.55, y: 2.03, z: 9.72}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1921805887}
   - {fileID: 1742890770}
+  - {fileID: 803946069}
+  - {fileID: 2029147043}
+  - {fileID: 1954056599}
+  - {fileID: 1186381182}
   - {fileID: 1055405081}
   - {fileID: 1340050534}

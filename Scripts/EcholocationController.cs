@@ -3,15 +3,9 @@ using Unity.Jobs;
 using Unity.Collections;
 using UnityEngine.Rendering;
 using System.Runtime.InteropServices;
-using UnityEngine.InputSystem;
-
-// Define the structure that will be passed to the GPU.
-// This must match the PointData struct in the compute and rendering shaders.
-// It's crucial that the memory layout is sequential.
 
 namespace StarterAssets
 {
-
     [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public struct PointData
     {
@@ -34,133 +28,128 @@ namespace StarterAssets
         [Header("Configuration")]
         public int rayCount = 50000;
         public float maxDistance = 100f;
-        public float pointLifetime = 3.0f; // How long points last before fading out
+        public float pointLifetime = 3.0f;
+        [Tooltip("The maximum number of waves to stack before overwriting the oldest.")]
+        public int maxWaves = 10;
 
         [Header("References")]
         public ComputeShader computeShader;
-        public Mesh pointMesh; // A simple mesh to represent each point (e.g., a small quad)
-        public Material pointMaterial; // Material using the PointRenderer shader
+        public Mesh pointMesh;
+        public Material pointMaterial;
 
         [Header("Wave Settings")]
-        public float propagationSpeed = 50f; // meters per second
+        public float propagationSpeed = 50f;
 
-        // NativeArrays for the C# Job System (Steps 2 & 3)
         private NativeArray<RaycastCommand> commands;
         private NativeArray<RaycastHit> results;
         private JobHandle raycastHandle;
 
-        // Compute Buffers for GPU data transfer (Steps 4, 6, 7)
-        private ComputeBuffer raycastHitsBuffer;     // Input for Compute Shader
-        private ComputeBuffer processedPointsBuffer; // Output of Compute Shader / Input for Renderer
-        private ComputeBuffer drawArgsBuffer;        // For indirect drawing arguments
+        private ComputeBuffer raycastHitsBuffer;
+        private ComputeBuffer processedPointsBuffer;
+        private ComputeBuffer drawArgsBuffer;
 
-        // Shader property IDs for performance
-        private int processedPointsBufferID = Shader.PropertyToID("_PointsBuffer");
-        private int propagationSpeedID = Shader.PropertyToID("_PropagationSpeed");
-        private int timeID = Shader.PropertyToID("_Time");
-        private int rayCountID = Shader.PropertyToID("_RayCount");
-        private int lifetimeID = Shader.PropertyToID("_LifeTime");
+        private Material instantiatedMaterial;
+        private ComputeShader instantiatedComputeShader;
+
+        // --- NEW ---
+        // Tracks which wave "slot" we are currently writing to.
+        private int currentWaveIndex = 0;
+        // The total number of points currently alive in the VRAM buffer.
+        private int totalPointsInVRAM = 0;
+        // We need a CPU-side copy of the args to update them.
+        private uint[] drawArgs;
+
+
+        // Shader property IDs
+        private static readonly int
+            processedPointsBufferID = Shader.PropertyToID("_PointsBuffer"),
+            propagationSpeedID = Shader.PropertyToID("_PropagationSpeed"),
+            timeID = Shader.PropertyToID("_Time"),
+            rayCountID = Shader.PropertyToID("_RayCount"),
+            lifetimeID = Shader.PropertyToID("_LifeTime"),
+            pointOffsetID = Shader.PropertyToID("_PointOffset"); // New ID for the offset
 
         private int kernelIndex;
 
         void Start()
         {
-            // --- Initialization ---
-            // 1. Allocate memory that is not managed by the garbage collector.
+            instantiatedMaterial = new Material(pointMaterial);
+            instantiatedComputeShader = Instantiate(computeShader);
+
             commands = new NativeArray<RaycastCommand>(rayCount, Allocator.Persistent);
             results = new NativeArray<RaycastHit>(rayCount, Allocator.Persistent);
 
-            // 2. Initialize the Compute Buffers.
-            // We use a simplified RaycastHit struct on the GPU side. Unity's RaycastHit is complex,
-            // but its data is laid out sequentially in a way that the essential parts (point, normal, colliderID)
-            // can be read by the compute shader.
             int simpleRaycastHitStride = sizeof(float) * 3 + sizeof(float) * 3 + sizeof(float) + sizeof(int);
             raycastHitsBuffer = new ComputeBuffer(rayCount, simpleRaycastHitStride, ComputeBufferType.Default);
 
-            processedPointsBuffer = new ComputeBuffer(rayCount, sizeof(float) * 7, ComputeBufferType.Append);
+            // --- MODIFIED ---
+            // The buffer is no longer an Append buffer. It's a default, read/write buffer.
+            int maxPointCount = rayCount * maxWaves;
+            processedPointsBuffer = new ComputeBuffer(maxPointCount, sizeof(float) * 7, ComputeBufferType.Default);
 
-            // Indirect draw arguments: [index count per instance, instance count, start index, base vertex, start instance]
             drawArgsBuffer = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
-            uint[] args = new uint[5] { 0, 0, 0, 0, 0 };
-            args[0] = pointMesh.GetIndexCount(0);
-            args[1] = (uint)rayCount;
-            args[2] = pointMesh.GetIndexStart(0);
-            args[3] = pointMesh.GetBaseVertex(0);
-            drawArgsBuffer.SetData(args);
+            drawArgs = new uint[5] { 0, 0, 0, 0, 0 };
+            drawArgs[0] = pointMesh.GetIndexCount(0);
+            drawArgs[1] = 0; // Start with 0 points to draw.
+            drawArgs[2] = pointMesh.GetIndexStart(0);
+            drawArgs[3] = pointMesh.GetBaseVertex(0);
+            drawArgsBuffer.SetData(drawArgs);
 
-            // 3. Link buffers and properties to shaders.
-            kernelIndex = computeShader.FindKernel("GeneratePoints");
-            computeShader.SetBuffer(kernelIndex, "_RaycastHitsBuffer", raycastHitsBuffer);
-            computeShader.SetBuffer(kernelIndex, "_ProcessedPointsBuffer", processedPointsBuffer);
-            pointMaterial.SetBuffer(processedPointsBufferID, processedPointsBuffer);
-            pointMaterial.SetFloat(lifetimeID, pointLifetime);
+            kernelIndex = instantiatedComputeShader.FindKernel("GeneratePoints");
+            instantiatedComputeShader.SetBuffer(kernelIndex, "_RaycastHitsBuffer", raycastHitsBuffer);
+            instantiatedComputeShader.SetBuffer(kernelIndex, "_ProcessedPointsBuffer", processedPointsBuffer);
+
+            instantiatedMaterial.SetBuffer(processedPointsBufferID, processedPointsBuffer);
+            instantiatedMaterial.SetFloat(lifetimeID, pointLifetime);
         }
 
         void OnDestroy()
         {
-            // --- Cleanup ---
-            // Always release native collections and buffers to avoid memory leaks.
             if (commands.IsCreated) commands.Dispose();
             if (results.IsCreated) results.Dispose();
-
             raycastHitsBuffer?.Release();
             processedPointsBuffer?.Release();
             drawArgsBuffer?.Release();
+
+            if (instantiatedMaterial != null) Destroy(instantiatedMaterial);
+            if (instantiatedComputeShader != null) Destroy(instantiatedComputeShader);
         }
 
         void Update()
         {
-            // Step 1: Sound Trigger
-            // For demonstration, trigger with a key press.
-
-            if (StarterAssetsInputs.Instance != null)
+            if (StarterAssetsInputs.Instance?.GetFireInputDown() ?? false)
             {
-                if (StarterAssetsInputs.Instance.GetFireInputDown())
-                {
-                    TriggerEcholocation();
-                }
+                TriggerEcholocation();
             }
 
-            // Step 7: GPU Rendering
-            // This is called every frame to draw the points currently alive on the GPU.
             Graphics.DrawMeshInstancedIndirect(
                 pointMesh,
                 0,
-                pointMaterial,
+                instantiatedMaterial,
                 new Bounds(Vector3.zero, new Vector3(1000.0f, 1000.0f, 1000.0f)),
-                drawArgsBuffer,
-                0,
-                null,
-                ShadowCastingMode.Off,
-                false
+                drawArgsBuffer
             );
         }
 
         public void TriggerEcholocation()
         {
-            Debug.Log("Start ecolocation");
-            // --- Frame Logic ---
-            // Ensure the previous job is complete before starting a new one.
             raycastHandle.Complete();
 
-            // Step 2: Job Scheduling
-            // Populate the commands array with rays in a spherical pattern.
-            Vector3 origin = transform.position;
+            // --- MODIFIED: Circular Buffer Logic ---
+            // 1. Calculate the offset for the current wave.
+            int pointOffset = currentWaveIndex * rayCount;
+            Debug.Log($"Start Echolocation Wave: {currentWaveIndex + 1}/{maxWaves}. Writing at offset: {pointOffset}");
 
+            // 2. Schedule physics jobs.
+            Vector3 origin = transform.position;
             for (int i = 0; i < rayCount; i++)
             {
-                Vector3 direction = UnityEngine.Random.onUnitSphere;
-                commands[i] = new RaycastCommand(origin, direction, QueryParameters.Default, maxDistance);
+                commands[i] = new RaycastCommand(origin, UnityEngine.Random.onUnitSphere, QueryParameters.Default, maxDistance);
             }
-
-            // Step 3: Physics Job Execution
             raycastHandle = RaycastCommand.ScheduleBatch(commands, results, 1, default);
-
-            // This must be called before we can use the results.
             raycastHandle.Complete();
 
-            // Step 4: CPU-GPU Data Transfer
-            // Copy the raw hit data to the GPU buffer.
+            // 3. Copy raycast hits to a temporary buffer.
             SimpleRaycastHit[] simpleHits = new SimpleRaycastHit[rayCount];
             for (int i = 0; i < rayCount; i++)
             {
@@ -170,22 +159,30 @@ namespace StarterAssets
                 simpleHits[i].distance = hit.distance;
                 simpleHits[i].colliderInstanceID = hit.collider != null ? hit.collider.GetInstanceID() : 0;
             }
-
             raycastHitsBuffer.SetData(simpleHits);
-            processedPointsBuffer.SetCounterValue(0); // Reset the append buffer counter
 
-            // Step 5: Compute Shader Dispatch
-            computeShader.SetFloat(propagationSpeedID, propagationSpeed);
-            computeShader.SetFloat(timeID, Time.time);
-            computeShader.SetInt(rayCountID, rayCount);
+            // 4. Dispatch the compute shader.
+            instantiatedComputeShader.SetFloat(propagationSpeedID, propagationSpeed);
+            instantiatedComputeShader.SetFloat(timeID, Time.time);
+            instantiatedComputeShader.SetInt(rayCountID, rayCount);
+            instantiatedComputeShader.SetInt(pointOffsetID, pointOffset);
 
-            // Tell the GPU to run the compute shader.
-            // The number of thread groups is calculated to cover all rays.
             int threadGroups = Mathf.CeilToInt(rayCount / 64.0f);
-            computeShader.Dispatch(kernelIndex, threadGroups, 1, 1);
+            instantiatedComputeShader.Dispatch(kernelIndex, threadGroups, 1, 1);
 
-            // Update the instance count in the indirect draw buffer from the append buffer's counter.
-            ComputeBuffer.CopyCount(processedPointsBuffer, drawArgsBuffer, sizeof(uint));
+            // --- MODIFIED: Manually update the draw argument buffer.
+            // 5. Update the total number of points to draw.
+            // We increase the count until the buffer is full, then it stays at max.
+            if (totalPointsInVRAM < rayCount * maxWaves)
+            {
+                totalPointsInVRAM += rayCount;
+            }
+            drawArgs[1] = (uint)totalPointsInVRAM;
+            drawArgsBuffer.SetData(drawArgs);
+
+            // --- NEW ---
+            // 6. Move to the next "slot" in the circular buffer for the next wave.
+            currentWaveIndex = (currentWaveIndex + 1) % maxWaves;
         }
     }
 }

@@ -1,51 +1,64 @@
 #pragma kernel GeneratePoints
 
-// Define a struct that mirrors the layout of Unity's RaycastHit data
-// when passed to a ComputeBuffer. We only care about these fields.
 struct UnityRaycastHit {
     float3 p;
     float3 normal;
     float distance;
-    uint colliderInstanceID; // Use this to check for a valid hit (is 0 on miss)
+    uint colliderInstanceID;
 };
 
-// This must match the PointData struct in C#
 struct PointData {
     float3 position;
     float3 normal;
     float startTime;
 };
 
-// Input and Output Buffers
+// --- MODIFIED ---
+// Changed from AppendStructuredBuffer to RWStructuredBuffer
+// This allows us to write to any index, not just append to the end.
+RWStructuredBuffer<PointData> _ProcessedPointsBuffer;
 StructuredBuffer<UnityRaycastHit> _RaycastHitsBuffer;
-AppendStructuredBuffer<PointData> _ProcessedPointsBuffer;
+
 
 // Uniforms passed from C#
 float _PropagationSpeed;
 float _Time;
 int _RayCount;
 
+// --- NEW ---
+// The starting index in the buffer where this wave's points should be written.
+int _PointOffset;
+
 [numthreads(64,1,1)]
 void GeneratePoints (uint3 id : SV_DispatchThreadID)
 {
-    // Bounds check to avoid processing more threads than we have rays
     if (id.x >= _RayCount)
     {
         return;
     }
 
-    // Step 6: GPU Point Generation
-    // Read the raw hit data for this thread
     UnityRaycastHit hit = _RaycastHitsBuffer[id.x];
+    PointData p;
 
-    // Filter out non-hits (a colliderInstanceID of 0 means no collider was hit)
+    // --- MODIFIED ---
+    // Instead of filtering out misses, we process every ray.
+    // If a ray missed, we create a "dead" point by setting its startTime to -1.
+    // The rendering shader will automatically cull this point because its age will be negative.
     if (hit.colliderInstanceID > 0)
     {
-        PointData p;
+        // This was a valid hit.
         p.position = hit.p;
         p.normal = hit.normal;
         p.startTime = _Time + (hit.distance / _PropagationSpeed);
-
-        _ProcessedPointsBuffer.Append(p);
     }
+    else
+    {
+        // This was a miss. Create a dead point.
+        p.position = float3(0, 0, 0);
+        p.normal = float3(0, 1, 0);
+        p.startTime = -1.0f; // This marks it for immediate culling in the renderer.
+    }
+
+    // Write the point data to the correct, offset position in the buffer.
+    _ProcessedPointsBuffer[id.x + _PointOffset] = p;
 }

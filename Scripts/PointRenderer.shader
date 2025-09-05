@@ -26,6 +26,7 @@ Shader "Custom/PointRenderer"
                 float3 position;
                 float3 normal;
                 float startTime;
+                //float3 color;
             };
 
             struct appdata
@@ -62,6 +63,8 @@ Shader "Custom/PointRenderer"
                 }
 
                 float fade = 1.0 - saturate(age / _LifeTime);
+                //float3 finalColor = p.color;
+                //o.color = float4(finalColor, fade);
 
                 if (fade <= 0)
                 {
