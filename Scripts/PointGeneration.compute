@@ -13,21 +13,14 @@ struct PointData {
     float startTime;
 };
 
-// --- MODIFIED ---
-// Changed from AppendStructuredBuffer to RWStructuredBuffer
-// This allows us to write to any index, not just append to the end.
-RWStructuredBuffer<PointData> _ProcessedPointsBuffer;
+// --- MODIFIED: Back to an Append Buffer ---
 StructuredBuffer<UnityRaycastHit> _RaycastHitsBuffer;
+AppendStructuredBuffer<PointData> _ProcessedPointsBuffer; // This is the output
 
-
-// Uniforms passed from C#
+// Uniforms
 float _PropagationSpeed;
 float _Time;
 int _RayCount;
-
-// --- NEW ---
-// The starting index in the buffer where this wave's points should be written.
-int _PointOffset;
 
 [numthreads(64,1,1)]
 void GeneratePoints (uint3 id : SV_DispatchThreadID)
@@ -38,27 +31,15 @@ void GeneratePoints (uint3 id : SV_DispatchThreadID)
     }
 
     UnityRaycastHit hit = _RaycastHitsBuffer[id.x];
-    PointData p;
 
-    // --- MODIFIED ---
-    // Instead of filtering out misses, we process every ray.
-    // If a ray missed, we create a "dead" point by setting its startTime to -1.
-    // The rendering shader will automatically cull this point because its age will be negative.
+    // --- MODIFIED: Back to the simpler logic ---
+    // Only append points that actually hit a collider.
     if (hit.colliderInstanceID > 0)
     {
-        // This was a valid hit.
+        PointData p;
         p.position = hit.p;
         p.normal = hit.normal;
         p.startTime = _Time + (hit.distance / _PropagationSpeed);
+        _ProcessedPointsBuffer.Append(p);
     }
-    else
-    {
-        // This was a miss. Create a dead point.
-        p.position = float3(0, 0, 0);
-        p.normal = float3(0, 1, 0);
-        p.startTime = -1.0f; // This marks it for immediate culling in the renderer.
-    }
-
-    // Write the point data to the correct, offset position in the buffer.
-    _ProcessedPointsBuffer[id.x + _PointOffset] = p;
 }
