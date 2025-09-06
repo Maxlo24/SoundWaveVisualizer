@@ -72,8 +72,10 @@ namespace StarterAssets
         private Dictionary<string, Color> colorMap;
 
         // --- (Private variables are mostly the same) ---
+        private float pointLifetimeThreshold;
         private Queue<PendingWave> pendingWaves;
         private ComputeBuffer[] wavePointBuffers;
+        private float[] waveTriggerTimes;
         private ComputeBuffer[] drawArgsBuffers;
         private uint[] drawArgsTemplate;
         private NativeArray<RaycastCommand>[] commandsPool;
@@ -89,9 +91,10 @@ namespace StarterAssets
             rayCountID = Shader.PropertyToID("_RayCount"),
             lifetimeID = Shader.PropertyToID("_LifeTime"),
             raycastHitsBufferID = Shader.PropertyToID("_RaycastHitsBuffer"),
-            processedPointsOutBufferID = Shader.PropertyToID("_ProcessedPointsBuffer"),
-            cameraToWorldMatrixID = Shader.PropertyToID("_CameraToWorld");
+            processedPointsOutBufferID = Shader.PropertyToID("_ProcessedPointsBuffer");
         private int kernelIndex;
+
+        private SimpleRaycastHit[] simpleHits;
 
         void Start()
         {
@@ -111,9 +114,8 @@ namespace StarterAssets
             propertyBlock = new MaterialPropertyBlock();
             instantiatedComputeShader = Instantiate(computeShader);
             pendingWaves = new Queue<PendingWave>();
+            simpleHits = new SimpleRaycastHit[rayCount];
 
-            wavePointBuffers = new ComputeBuffer[maxWaves];
-            drawArgsBuffers = new ComputeBuffer[maxWaves];
 
             // MODIFIED: The arguments for DrawMeshInstancedIndirect need 5 uints.
             drawArgsTemplate = new uint[5] { 0, 0, 0, 0, 0 };
@@ -124,17 +126,19 @@ namespace StarterAssets
                 drawArgsTemplate[3] = pointMesh.GetBaseVertex(0);
             }
 
+            wavePointBuffers = new ComputeBuffer[maxWaves];
+            drawArgsBuffers = new ComputeBuffer[maxWaves];
+            commandsPool = new NativeArray<RaycastCommand>[maxWaves];
+            resultsPool = new NativeArray<RaycastHit>[maxWaves];
+            waveTriggerTimes = new float[maxWaves];
+
+            pointLifetimeThreshold = pointLifetime + maxDistance / propagationSpeed;
             for (int i = 0; i < maxWaves; i++)
             {
+                waveTriggerTimes[i] = -pointLifetimeThreshold; // Initialize to an expired time
                 wavePointBuffers[i] = new ComputeBuffer(rayCount, Marshal.SizeOf<PointData>(), ComputeBufferType.Append);
                 drawArgsBuffers[i] = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
                 drawArgsBuffers[i].SetData(drawArgsTemplate);
-            }
-
-            commandsPool = new NativeArray<RaycastCommand>[maxWaves];
-            resultsPool = new NativeArray<RaycastHit>[maxWaves];
-            for (int i = 0; i < maxWaves; i++)
-            {
                 commandsPool[i] = new NativeArray<RaycastCommand>(rayCount, Allocator.Persistent);
                 resultsPool[i] = new NativeArray<RaycastHit>(rayCount, Allocator.Persistent);
             }
@@ -186,7 +190,7 @@ namespace StarterAssets
                 ComputeBuffer currentHitsBuffer = raycastHitsBufferPool[finishedWave.waveBufferIndex];
                 NativeArray<RaycastHit> currentResults = finishedWave.results;
 
-                SimpleRaycastHit[] simpleHits = new SimpleRaycastHit[rayCount];
+                //SimpleRaycastHit[] simpleHits = new SimpleRaycastHit[rayCount];
                 for (int i = 0; i < rayCount; i++)
                 {
                     var hit = currentResults[i];
@@ -229,23 +233,25 @@ namespace StarterAssets
             {
                 TriggerEcholocation();
             }
-            Matrix4x4 cameraToWorldMatrix = renderingCamera.cameraToWorldMatrix;
+
+
 
             for (int i = 0; i < maxWaves; i++)
             {
-                // The property block is how we pass our big data buffer to the Shader Graph
-                propertyBlock.SetBuffer(processedPointsBufferID, wavePointBuffers[i]);
-                propertyBlock.SetMatrix(cameraToWorldMatrixID, cameraToWorldMatrix);
+                if (Time.time - waveTriggerTimes[i] <= pointLifetimeThreshold)
+                {
+                    propertyBlock.SetBuffer(processedPointsBufferID, wavePointBuffers[i]);
 
-                Graphics.DrawMeshInstancedIndirect(
-                    pointMesh,
-                    0,
-                    instantiatedMaterial,
-                    new Bounds(Vector3.zero, new Vector3(1000.0f, 1000.0f, 1000.0f)),
-                    drawArgsBuffers[i],
-                    0,
-                    propertyBlock
-                );
+                    Graphics.DrawMeshInstancedIndirect(
+                        pointMesh,
+                        0,
+                        instantiatedMaterial,
+                        new Bounds(Vector3.zero, new Vector3(1000.0f, 1000.0f, 1000.0f)),
+                        drawArgsBuffers[i],
+                        0,
+                        propertyBlock
+                    );
+                }
             }
         }
 
@@ -262,6 +268,7 @@ namespace StarterAssets
 
             var handle = RaycastCommand.ScheduleBatch(currentCommands, currentResults, 1);
 
+            waveTriggerTimes[nextWaveIndex] = Time.time;
             pendingWaves.Enqueue(new PendingWave
             {
                 jobHandle = handle,

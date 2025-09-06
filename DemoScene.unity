@@ -355,7 +355,7 @@ GameObject:
   - component: {fileID: 518216349}
   m_Layer: 0
   m_Name: Cube
-  m_TagString: Tile
+  m_TagString: Stone
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -452,6 +452,117 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1340050534}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &725926965
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 725926966}
+  - component: {fileID: 725926969}
+  - component: {fileID: 725926968}
+  - component: {fileID: 725926967}
+  m_Layer: 0
+  m_Name: Cube (3)
+  m_TagString: Player
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &725926966
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 725926965}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 21.63, y: -1.7261, z: -12.2}
+  m_LocalScale: {x: 7.3, y: 7.3, z: 7.3}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 1340050534}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &725926967
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 725926965}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!23 &725926968
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 725926965}
+  m_Enabled: 0
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &725926969
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 725926965}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &803946067
 GameObject:
   m_ObjectHideFlags: 0
@@ -481,16 +592,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 395157da9ef314d538d6025566d97892, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EcholocationController
-  rayCount: 20000
+  rayCount: 5000
   maxDistance: 30
-  pointLifetime: 30
+  pointLifetime: 3
   maxWaves: 5
   renderingCamera: {fileID: 883625367}
   computeShader: {fileID: 7200000, guid: f1c054ab314be44b6a6d5292b83de4c6, type: 3}
   pointMesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
   pointMaterial: {fileID: 2100000, guid: d46a9379a674543d6b6ee9f96d688e28, type: 2}
-  propagationSpeed: 100
-  tagColors: []
+  propagationSpeed: 150
+  tagColors:
+  - tag: Stone
+    color: {r: 1, g: 1, b: 1, a: 0}
+  - tag: Player
+    color: {r: 1, g: 0, b: 0, a: 0}
   defaultColor: {r: 0.21368816, g: 0.52731645, b: 0.9245283, a: 1}
 --- !u!4 &803946069
 Transform:
@@ -535,13 +650,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 883625362}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.4226182, y: -0, z: -0.000000014901161, w: 0.9063079}
-  m_LocalPosition: {x: 0, y: 35, z: -30}
+  m_LocalRotation: {x: 0.3420201, y: 0, z: 0, w: 0.9396927}
+  m_LocalPosition: {x: 0, y: 20, z: -25}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1055405081}
-  m_LocalEulerAnglesHint: {x: 50, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 40, y: 0, z: 0}
 --- !u!114 &883625364
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -688,7 +803,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f728d37cb50b64ed9829eca6197ce429, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ObjectRotation
-  m_rotationSpeed: 0.1
+  m_x_rotationSpeed: 0
+  m_y_rotationSpeed: 10
+  m_z_rotationSpeed: 0
 --- !u!4 &1055405081
 Transform:
   m_ObjectHideFlags: 0
@@ -697,14 +814,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1055405079}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0.9238796, z: -0, w: -0.38268325}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 883625363}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 225, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1186381180
 GameObject:
   m_ObjectHideFlags: 0
@@ -715,6 +832,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1186381182}
   - component: {fileID: 1186381181}
+  - component: {fileID: 1186381183}
   m_Layer: 0
   m_Name: RedEchoSource (1)
   m_TagString: Untagged
@@ -734,16 +852,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 395157da9ef314d538d6025566d97892, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EcholocationController
-  rayCount: 20000
-  maxDistance: 30
-  pointLifetime: 30
+  rayCount: 50000
+  maxDistance: 50
+  pointLifetime: 6
   maxWaves: 5
   renderingCamera: {fileID: 883625367}
   computeShader: {fileID: 7200000, guid: f1c054ab314be44b6a6d5292b83de4c6, type: 3}
   pointMesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
   pointMaterial: {fileID: 2100000, guid: d46a9379a674543d6b6ee9f96d688e28, type: 2}
-  propagationSpeed: 100
-  tagColors: []
+  propagationSpeed: 30
+  tagColors:
+  - tag: Stone
+    color: {r: 1, g: 1, b: 1, a: 0}
+  - tag: Player
+    color: {r: 1, g: 0, b: 0, a: 0}
   defaultColor: {r: 1, g: 0.33503586, b: 0.2980392, a: 1}
 --- !u!4 &1186381182
 Transform:
@@ -760,6 +882,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1186381183
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1186381180}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d48dc2a9e45348ff99caaa9b652b806, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjectToMouseCursor
 --- !u!1 &1340050533
 GameObject:
   m_ObjectHideFlags: 0
@@ -790,6 +924,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 233258347}
+  - {fileID: 725926966}
   - {fileID: 1680522633}
   - {fileID: 170921776}
   - {fileID: 1438992179}
@@ -1063,16 +1198,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 395157da9ef314d538d6025566d97892, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EcholocationController
-  rayCount: 20000
+  rayCount: 5000
   maxDistance: 30
-  pointLifetime: 30
+  pointLifetime: 1
   maxWaves: 5
   renderingCamera: {fileID: 883625367}
   computeShader: {fileID: 7200000, guid: f1c054ab314be44b6a6d5292b83de4c6, type: 3}
   pointMesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
   pointMaterial: {fileID: 2100000, guid: d46a9379a674543d6b6ee9f96d688e28, type: 2}
-  propagationSpeed: 100
-  tagColors: []
+  propagationSpeed: 50
+  tagColors:
+  - tag: Stone
+    color: {r: 1, g: 1, b: 1, a: 0}
+  - tag: Player
+    color: {r: 1, g: 0, b: 0, a: 0}
   defaultColor: {r: 0.5846799, g: 1, b: 0.2971698, a: 1}
 --- !u!1 &1921805885
 GameObject:
@@ -1230,16 +1369,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 395157da9ef314d538d6025566d97892, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EcholocationController
-  rayCount: 20000
+  rayCount: 5000
   maxDistance: 30
-  pointLifetime: 30
+  pointLifetime: 0.3
   maxWaves: 5
   renderingCamera: {fileID: 883625367}
   computeShader: {fileID: 7200000, guid: f1c054ab314be44b6a6d5292b83de4c6, type: 3}
   pointMesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
   pointMaterial: {fileID: 2100000, guid: d46a9379a674543d6b6ee9f96d688e28, type: 2}
-  propagationSpeed: 100
-  tagColors: []
+  propagationSpeed: 150
+  tagColors:
+  - tag: Stone
+    color: {r: 1, g: 1, b: 1, a: 0}
+  - tag: Player
+    color: {r: 1, g: 0, b: 0, a: 0}
   defaultColor: {r: 1, g: 0.33503586, b: 0.2980392, a: 1}
 --- !u!4 &1954056599
 Transform:
@@ -1285,16 +1428,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 395157da9ef314d538d6025566d97892, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EcholocationController
-  rayCount: 20000
+  rayCount: 5000
   maxDistance: 30
-  pointLifetime: 30
+  pointLifetime: 3
   maxWaves: 5
   renderingCamera: {fileID: 883625367}
   computeShader: {fileID: 7200000, guid: f1c054ab314be44b6a6d5292b83de4c6, type: 3}
   pointMesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
   pointMaterial: {fileID: 2100000, guid: d46a9379a674543d6b6ee9f96d688e28, type: 2}
   propagationSpeed: 100
-  tagColors: []
+  tagColors:
+  - tag: Stone
+    color: {r: 1, g: 1, b: 1, a: 0}
+  - tag: Player
+    color: {r: 1, g: 0, b: 0, a: 0}
   defaultColor: {r: 0.21368816, g: 0.52731645, b: 0.9245283, a: 1}
 --- !u!4 &2029147043
 Transform:

@@ -20,7 +20,7 @@ StructuredBuffer<PointData> _PointsBuffer;
 // This is the function that the Shader Graph Custom Function node will call.
 // It takes the ID of the current instance (or vertex) being drawn and returns the
 // corresponding data from our buffer.
-void GetOnePointData_float(uint instanceID, in float currentTime, in float lifeTime, in float3 localVertexPositionOS, in float pointSize,in float4x4 cameraToWorld, out float3 position, out float alpha, out float4 color)
+void GetOnePointData_float(uint instanceID, in float currentTime, in float lifeTime, in float3 localVertexPositionOS, in float pointSize, out float3 position, out float alpha, out float4 color)
 {
     //PointData data = _PointsBuffer[instanceID];
     //position = data.position;
@@ -36,25 +36,26 @@ void GetOnePointData_float(uint instanceID, in float currentTime, in float lifeT
     // Step 3: Perform the alpha calculation.
     float age = currentTime - data.startTime;
 
-    // If the point's start time is in the future, its age is negative.
-    // In this case, its alpha should be 0 so it's not visible yet.
     if (age < 0.0)
     {
         alpha = 0.0;
         return;
     }
+    float age_factor = 1.0 - saturate(age / lifeTime);
 
-    // Calculate the fade, clamp it between 0 and 1, and invert it.
-    // (saturate is a cheap way to do a min(max(x, 0), 1) clamp)
-    alpha = 1.0 - saturate(age / lifeTime);
+    alpha = age_factor;
+    float size_factor = 0.5 + age_factor;
 
 
-    float3 cameraUpWS = cameraToWorld[1].xyz;
-    float3 cameraRightWS = cameraToWorld[0].xyz;
+    float4 pointViewPos = mul(UNITY_MATRIX_V, float4(data.position, 1.0));
 
-    float3 offset = (cameraRightWS * localVertexPositionOS.x + cameraUpWS * localVertexPositionOS.y) * pointSize;
+    float3 offsetView = float3(localVertexPositionOS.x, localVertexPositionOS.y, 0.0) * pointSize * size_factor;
+    pointViewPos.xyz += offsetView;
 
-    position = data.position + offset;
+    float4 finalWorldPos = mul(UNITY_MATRIX_I_V, pointViewPos);
+    position = finalWorldPos.xyz;
+
+
 }
 
 #endif // POINT_DATA_READER_HLSL
