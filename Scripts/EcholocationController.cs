@@ -1,20 +1,29 @@
 using UnityEngine;
 using Unity.Jobs;
 using Unity.Collections;
-using UnityEngine.Rendering;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 
 namespace StarterAssets
 {
+    // Serializable struct for Inspector color mapping (no changes here)
+    [System.Serializable]
+    public struct TagColor
+    {
+        public string tag;
+        public Color color;
+    }
+
+    // The PointData struct now includes color (no changes from last version)
     [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public struct PointData
     {
         public Vector3 position;
-        public Vector3 normal;
         public float startTime;
+        public Color color;
     }
 
+    // The SimpleRaycastHit struct includes color (no changes from last version)
     [StructLayout(LayoutKind.Sequential)]
     public struct SimpleRaycastHit
     {
@@ -22,19 +31,18 @@ namespace StarterAssets
         public Vector3 normal;
         public float distance;
         public int colliderInstanceID;
+        public Color color;
     }
-
-
 
     public class EcholocationController : MonoBehaviour
     {
-        // --- MODIFIED: The job tracker now needs its own data ---
+        // --- (PendingWave struct is unchanged) ---
         private struct PendingWave
         {
             public JobHandle jobHandle;
             public int waveBufferIndex;
-            public NativeArray<RaycastHit> results; // Each job has its own results array
-            public float triggerTime; // Store the time the wave was fired
+            public NativeArray<RaycastHit> results;
+            public float triggerTime;
         }
 
         [Header("Configuration")]
@@ -46,33 +54,31 @@ namespace StarterAssets
 
         [Header("References")]
         public ComputeShader computeShader;
+        // MODIFIED: We need a mesh to instance. Assign a simple quad here.
         public Mesh pointMesh;
+        // This material will be one created from your new Shader Graph
         public Material pointMaterial;
 
         [Header("Wave Settings")]
         public float propagationSpeed = 50f;
 
-        private Queue<PendingWave> pendingWaves;
+        [Header("Color Mapping")]
+        public List<TagColor> tagColors;
+        public Color defaultColor = Color.white;
+        private Dictionary<string, Color> colorMap;
 
-        // Buffer Pool for GPU data
+        // --- (Private variables are mostly the same) ---
+        private Queue<PendingWave> pendingWaves;
         private ComputeBuffer[] wavePointBuffers;
         private ComputeBuffer[] drawArgsBuffers;
         private uint[] drawArgsTemplate;
-
-        // --- NEW: Pool of NativeArrays for CPU jobs ---
         private NativeArray<RaycastCommand>[] commandsPool;
         private NativeArray<RaycastHit>[] resultsPool;
-
-        // Shared input buffer for the compute shader
-        //private ComputeBuffer raycastHitsBuffer;
         private ComputeBuffer[] raycastHitsBufferPool;
-
         private int nextWaveIndex = 0;
         private Material instantiatedMaterial;
         private ComputeShader instantiatedComputeShader;
-
-        private MaterialPropertyBlock propertyBlock; // Add this line
-
+        private MaterialPropertyBlock propertyBlock;
         private static readonly int processedPointsBufferID = Shader.PropertyToID("_PointsBuffer"),
             propagationSpeedID = Shader.PropertyToID("_PropagationSpeed"),
             timeID = Shader.PropertyToID("_Time"),
@@ -84,27 +90,36 @@ namespace StarterAssets
 
         void Start()
         {
+            colorMap = new Dictionary<string, Color>();
+            foreach (var tagColor in tagColors)
+            {
+                if (!colorMap.ContainsKey(tagColor.tag)) colorMap.Add(tagColor.tag, tagColor.color);
+            }
+
             instantiatedMaterial = new Material(pointMaterial);
-            propertyBlock = new MaterialPropertyBlock(); // Add this line
+            propertyBlock = new MaterialPropertyBlock();
             instantiatedComputeShader = Instantiate(computeShader);
             pendingWaves = new Queue<PendingWave>();
 
-            // --- Initialize GPU pools ---
             wavePointBuffers = new ComputeBuffer[maxWaves];
             drawArgsBuffers = new ComputeBuffer[maxWaves];
+
+            // MODIFIED: The arguments for DrawMeshInstancedIndirect need 5 uints.
             drawArgsTemplate = new uint[5] { 0, 0, 0, 0, 0 };
-            drawArgsTemplate[0] = pointMesh.GetIndexCount(0);
-            drawArgsTemplate[2] = pointMesh.GetIndexStart(0);
-            drawArgsTemplate[3] = pointMesh.GetBaseVertex(0);
+            if (pointMesh != null)
+            {
+                drawArgsTemplate[0] = pointMesh.GetIndexCount(0);
+                drawArgsTemplate[2] = pointMesh.GetIndexStart(0);
+                drawArgsTemplate[3] = pointMesh.GetBaseVertex(0);
+            }
 
             for (int i = 0; i < maxWaves; i++)
             {
-                wavePointBuffers[i] = new ComputeBuffer(rayCount, sizeof(float) * 7, ComputeBufferType.Append);
+                wavePointBuffers[i] = new ComputeBuffer(rayCount, Marshal.SizeOf<PointData>(), ComputeBufferType.Append);
                 drawArgsBuffers[i] = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
                 drawArgsBuffers[i].SetData(drawArgsTemplate);
             }
 
-            // --- Initialize CPU Job Data Pools ---
             commandsPool = new NativeArray<RaycastCommand>[maxWaves];
             resultsPool = new NativeArray<RaycastHit>[maxWaves];
             for (int i = 0; i < maxWaves; i++)
@@ -113,7 +128,7 @@ namespace StarterAssets
                 resultsPool[i] = new NativeArray<RaycastHit>(rayCount, Allocator.Persistent);
             }
 
-            int simpleRaycastHitStride = sizeof(float) * 3 + sizeof(float) * 3 + sizeof(float) + sizeof(int);
+            int simpleRaycastHitStride = Marshal.SizeOf<SimpleRaycastHit>();
             raycastHitsBufferPool = new ComputeBuffer[maxWaves];
             for (int i = 0; i < maxWaves; i++)
             {
@@ -121,19 +136,16 @@ namespace StarterAssets
             }
 
             kernelIndex = instantiatedComputeShader.FindKernel("GeneratePoints");
-            //instantiatedComputeShader.SetBuffer(kernelIndex, raycastHitsBufferID, raycastHitsBuffer);
             instantiatedMaterial.SetFloat(lifetimeID, pointLifetime);
         }
 
         void OnDestroy()
         {
-            // Complete any running job before destroying anything
             if (pendingWaves.Count > 0)
             {
                 pendingWaves.Peek().jobHandle.Complete();
             }
 
-            // Dispose all pooled NativeArrays
             for (int i = 0; i < maxWaves; i++)
             {
                 if (commandsPool[i].IsCreated) commandsPool[i].Dispose();
@@ -153,19 +165,16 @@ namespace StarterAssets
 
         void Update()
         {
-            // --- CONSUMER ---
             if (pendingWaves.Count > 0 && pendingWaves.Peek().jobHandle.IsCompleted)
             {
                 var finishedWave = pendingWaves.Dequeue();
                 finishedWave.jobHandle.Complete();
 
-                // --- MODIFIED: Get the dedicated buffers for this specific wave ---
                 ComputeBuffer currentPointBuffer = wavePointBuffers[finishedWave.waveBufferIndex];
                 ComputeBuffer currentArgsBuffer = drawArgsBuffers[finishedWave.waveBufferIndex];
-                ComputeBuffer currentHitsBuffer = raycastHitsBufferPool[finishedWave.waveBufferIndex]; // Get the right hits buffer
+                ComputeBuffer currentHitsBuffer = raycastHitsBufferPool[finishedWave.waveBufferIndex];
                 NativeArray<RaycastHit> currentResults = finishedWave.results;
 
-                // ... (your for-loop to create simpleHits remains the same) ...
                 SimpleRaycastHit[] simpleHits = new SimpleRaycastHit[rayCount];
                 for (int i = 0; i < rayCount; i++)
                 {
@@ -173,57 +182,62 @@ namespace StarterAssets
                     simpleHits[i].p = hit.point;
                     simpleHits[i].normal = hit.normal;
                     simpleHits[i].distance = hit.distance;
-                    simpleHits[i].colliderInstanceID = hit.collider != null ? hit.collider.GetInstanceID() : 0;
+
+                    bool hasHit = hit.collider != null;
+                    simpleHits[i].colliderInstanceID = hasHit ? hit.collider.GetInstanceID() : 0;
+
+                    // MODIFIED: Check the tag and assign the correct color
+                    if (hasHit && colorMap.ContainsKey(hit.collider.tag))
+                    {
+                        simpleHits[i].color = colorMap[hit.collider.tag];
+                    }
+                    else
+                    {
+                        simpleHits[i].color = defaultColor;
+                    }
                 }
 
-                // --- MODIFIED: Use the dedicated buffer ---
-                currentHitsBuffer.SetData(simpleHits); // Set data on the correct buffer
-
+                currentHitsBuffer.SetData(simpleHits);
                 currentPointBuffer.SetCounterValue(0);
 
-                // --- MODIFIED: Tell the compute shader which buffers to use for this dispatch ---
-                instantiatedComputeShader.SetBuffer(kernelIndex, raycastHitsBufferID, currentHitsBuffer); // Input
-                instantiatedComputeShader.SetBuffer(kernelIndex, processedPointsOutBufferID, currentPointBuffer); // Output
-
+                instantiatedComputeShader.SetBuffer(kernelIndex, raycastHitsBufferID, currentHitsBuffer);
+                instantiatedComputeShader.SetBuffer(kernelIndex, processedPointsOutBufferID, currentPointBuffer);
                 instantiatedComputeShader.SetFloat(propagationSpeedID, propagationSpeed);
                 instantiatedComputeShader.SetFloat(timeID, finishedWave.triggerTime);
                 instantiatedComputeShader.SetInt(rayCountID, rayCount);
 
                 int threadGroups = Mathf.CeilToInt(rayCount / 64.0f);
                 instantiatedComputeShader.Dispatch(kernelIndex, threadGroups, 1, 1);
+
+                // For DrawProcedural, the second argument of the args buffer is the instance count, 
+                // which corresponds to the number of points.
                 ComputeBuffer.CopyCount(currentPointBuffer, currentArgsBuffer, sizeof(uint));
             }
 
-            // Trigger
             if (StarterAssetsInputs.Instance?.GetFireInputDown() ?? false)
             {
                 TriggerEcholocation();
             }
 
-            // Render
             for (int i = 0; i < maxWaves; i++)
             {
-                // Get the buffer for the current wave
-                var currentWaveBuffer = wavePointBuffers[i];
+                // The property block is how we pass our big data buffer to the Shader Graph
+                propertyBlock.SetBuffer(processedPointsBufferID, wavePointBuffers[i]);
 
-                // Set the buffer on the property block, NOT the material
-                propertyBlock.SetBuffer(processedPointsBufferID, currentWaveBuffer);
-
-                // Pass the property block to the draw call
                 Graphics.DrawMeshInstancedIndirect(
-                    pointMesh, 0, instantiatedMaterial,
+                    pointMesh,
+                    0,
+                    instantiatedMaterial,
                     new Bounds(Vector3.zero, new Vector3(1000.0f, 1000.0f, 1000.0f)),
                     drawArgsBuffers[i],
-                    0, // argsOffset
-                    propertyBlock // The property block with our override
+                    0,
+                    propertyBlock
                 );
             }
         }
 
-        // --- PRODUCER ---
         public void TriggerEcholocation()
         {
-            // Get the specific command and results arrays for this new job from our pools
             var currentCommands = commandsPool[nextWaveIndex];
             var currentResults = resultsPool[nextWaveIndex];
 
@@ -233,15 +247,14 @@ namespace StarterAssets
                 currentCommands[i] = new RaycastCommand(origin, UnityEngine.Random.onUnitSphere, QueryParameters.Default, maxDistance);
             }
 
-            // Schedule the job with its own unique data, breaking the dependency chain
             var handle = RaycastCommand.ScheduleBatch(currentCommands, currentResults, 1);
 
             pendingWaves.Enqueue(new PendingWave
             {
                 jobHandle = handle,
                 waveBufferIndex = nextWaveIndex,
-                results = currentResults, // Pass this specific results array along
-                triggerTime = Time.time // Record the exact time of the click
+                results = currentResults,
+                triggerTime = Time.time
             });
 
             nextWaveIndex = (nextWaveIndex + 1) % maxWaves;

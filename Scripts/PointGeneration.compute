@@ -5,19 +5,18 @@ struct UnityRaycastHit {
     float3 normal;
     float distance;
     uint colliderInstanceID;
+    float4 color;
 };
 
 struct PointData {
     float3 position;
-    float3 normal;
     float startTime;
+     float4 color;
 };
 
-// --- MODIFIED: Back to an Append Buffer ---
 StructuredBuffer<UnityRaycastHit> _RaycastHitsBuffer;
-AppendStructuredBuffer<PointData> _ProcessedPointsBuffer; // This is the output
+AppendStructuredBuffer<PointData> _ProcessedPointsBuffer;
 
-// Uniforms
 float _PropagationSpeed;
 float _Time;
 int _RayCount;
@@ -32,14 +31,12 @@ void GeneratePoints (uint3 id : SV_DispatchThreadID)
 
     UnityRaycastHit hit = _RaycastHitsBuffer[id.x];
 
-    // --- MODIFIED: Back to the simpler logic ---
-    // Only append points that actually hit a collider.
     if (hit.colliderInstanceID > 0)
     {
         PointData p;
         p.position = hit.p;
-        p.normal = hit.normal;
         p.startTime = _Time + (hit.distance / _PropagationSpeed);
+        p.color = hit.color;
         _ProcessedPointsBuffer.Append(p);
     }
 }
