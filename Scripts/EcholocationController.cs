@@ -52,6 +52,10 @@ namespace StarterAssets
         [Tooltip("The maximum number of waves to stack before overwriting the oldest.")]
         public int maxWaves = 5;
 
+        [Header("Dependencies")]
+        [Tooltip("The camera that renders the scene. We need its orientation for billboarding.")]
+        public Camera renderingCamera;
+
         [Header("References")]
         public ComputeShader computeShader;
         // MODIFIED: We need a mesh to instance. Assign a simple quad here.
@@ -85,7 +89,8 @@ namespace StarterAssets
             rayCountID = Shader.PropertyToID("_RayCount"),
             lifetimeID = Shader.PropertyToID("_LifeTime"),
             raycastHitsBufferID = Shader.PropertyToID("_RaycastHitsBuffer"),
-            processedPointsOutBufferID = Shader.PropertyToID("_ProcessedPointsBuffer");
+            processedPointsOutBufferID = Shader.PropertyToID("_ProcessedPointsBuffer"),
+            cameraToWorldMatrixID = Shader.PropertyToID("_CameraToWorld");
         private int kernelIndex;
 
         void Start()
@@ -94,6 +99,12 @@ namespace StarterAssets
             foreach (var tagColor in tagColors)
             {
                 if (!colorMap.ContainsKey(tagColor.tag)) colorMap.Add(tagColor.tag, tagColor.color);
+            }
+
+            if (renderingCamera == null)
+            {
+                Debug.LogError("Rendering Camera has not been assigned on the EcholocationController. Billboarding will fail. Please assign the main scene camera.", this);
+                renderingCamera = Camera.main;
             }
 
             instantiatedMaterial = new Material(pointMaterial);
@@ -218,11 +229,13 @@ namespace StarterAssets
             {
                 TriggerEcholocation();
             }
+            Matrix4x4 cameraToWorldMatrix = renderingCamera.cameraToWorldMatrix;
 
             for (int i = 0; i < maxWaves; i++)
             {
                 // The property block is how we pass our big data buffer to the Shader Graph
                 propertyBlock.SetBuffer(processedPointsBufferID, wavePointBuffers[i]);
+                propertyBlock.SetMatrix(cameraToWorldMatrixID, cameraToWorldMatrix);
 
                 Graphics.DrawMeshInstancedIndirect(
                     pointMesh,

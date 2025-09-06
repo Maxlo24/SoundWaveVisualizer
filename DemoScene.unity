@@ -483,8 +483,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EcholocationController
   rayCount: 20000
   maxDistance: 30
-  pointLifetime: 3
+  pointLifetime: 30
   maxWaves: 5
+  renderingCamera: {fileID: 883625367}
   computeShader: {fileID: 7200000, guid: f1c054ab314be44b6a6d5292b83de4c6, type: 3}
   pointMesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
   pointMaterial: {fileID: 2100000, guid: d46a9379a674543d6b6ee9f96d688e28, type: 2}
@@ -735,8 +736,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EcholocationController
   rayCount: 20000
   maxDistance: 30
-  pointLifetime: 3
+  pointLifetime: 30
   maxWaves: 5
+  renderingCamera: {fileID: 883625367}
   computeShader: {fileID: 7200000, guid: f1c054ab314be44b6a6d5292b83de4c6, type: 3}
   pointMesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
   pointMaterial: {fileID: 2100000, guid: d46a9379a674543d6b6ee9f96d688e28, type: 2}
@@ -1063,8 +1065,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EcholocationController
   rayCount: 20000
   maxDistance: 30
-  pointLifetime: 3
+  pointLifetime: 30
   maxWaves: 5
+  renderingCamera: {fileID: 883625367}
   computeShader: {fileID: 7200000, guid: f1c054ab314be44b6a6d5292b83de4c6, type: 3}
   pointMesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
   pointMaterial: {fileID: 2100000, guid: d46a9379a674543d6b6ee9f96d688e28, type: 2}
@@ -1229,8 +1232,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EcholocationController
   rayCount: 20000
   maxDistance: 30
-  pointLifetime: 3
+  pointLifetime: 30
   maxWaves: 5
+  renderingCamera: {fileID: 883625367}
   computeShader: {fileID: 7200000, guid: f1c054ab314be44b6a6d5292b83de4c6, type: 3}
   pointMesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
   pointMaterial: {fileID: 2100000, guid: d46a9379a674543d6b6ee9f96d688e28, type: 2}
@@ -1283,8 +1287,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EcholocationController
   rayCount: 20000
   maxDistance: 30
-  pointLifetime: 3
+  pointLifetime: 30
   maxWaves: 5
+  renderingCamera: {fileID: 883625367}
   computeShader: {fileID: 7200000, guid: f1c054ab314be44b6a6d5292b83de4c6, type: 3}
   pointMesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
   pointMaterial: {fileID: 2100000, guid: d46a9379a674543d6b6ee9f96d688e28, type: 2}
