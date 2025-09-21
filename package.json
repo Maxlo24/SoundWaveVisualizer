@@ -1,0 +1,11 @@
+{
+  "name": "maxpack.soundwavevisualizer",
+  "version": "1.0.0",
+  "displayName": "MaxPack - Sound Wave Visualizer",
+  "description": "This is a package to generate sound wave lidar visualizer.",
+  "unity": "2022.3 and later",
+  "author": {
+    "name": "Gillot Maxime",
+    "email": "max.gillot@cpe.fr"
+  }
+}
