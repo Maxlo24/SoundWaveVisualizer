@@ -52,6 +52,20 @@ namespace StarterAssets
         [Tooltip("The maximum number of waves to stack before overwriting the oldest.")]
         public int maxWaves = 5;
 
+        // Add these new variables to your script
+        #region Echolocation Shape Settings
+        [Header("Echolocation Shape Settings")]
+
+        [Tooltip("The horizontal field of view for the cone in degrees.")]
+        [Range(1, 360)]
+        public float horizontalFOV = 90f;
+
+        [Tooltip("The vertical field of view for the cone in degrees.")]
+        [Range(1, 180)]
+        public float verticalFOV = 60f;
+        #endregion
+
+
         [Header("Dependencies")]
         [Tooltip("The camera that renders the scene. We need its orientation for billboarding.")]
         public Camera renderingCamera;
@@ -255,15 +269,31 @@ namespace StarterAssets
             }
         }
 
+        /// <summary>
+        /// Generates a random normalized direction within a cone defined by the FOV settings.
+        /// </summary>
+        /// <returns>A random direction vector.</returns>
+        private Vector3 GetRandomDirectionInCone()
+        {
+            float randomHorizontalAngle = Random.Range(-horizontalFOV * 0.5f, horizontalFOV * 0.5f);
+            float randomVerticalAngle = Random.Range(-verticalFOV * 0.5f, verticalFOV * 0.5f);
+
+            Quaternion randomRotation = Quaternion.Euler(randomVerticalAngle, randomHorizontalAngle, 0);
+
+            return randomRotation * transform.forward;
+        }
+
+
         public void TriggerEcholocation()
         {
             var currentCommands = commandsPool[nextWaveIndex];
             var currentResults = resultsPool[nextWaveIndex];
 
+
             Vector3 origin = transform.position;
             for (int i = 0; i < rayCount; i++)
             {
-                currentCommands[i] = new RaycastCommand(origin, UnityEngine.Random.onUnitSphere, QueryParameters.Default, maxDistance);
+                currentCommands[i] = new RaycastCommand(origin, GetRandomDirectionInCone(), QueryParameters.Default, maxDistance);
             }
 
             var handle = RaycastCommand.ScheduleBatch(currentCommands, currentResults, 1);
