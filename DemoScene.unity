@@ -779,11 +779,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 883625362}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 49838256530144f609aa9303c2510050, type: 3}
+  m_Script: {fileID: 11500000, guid: df31c6690d0cb4e0287bc2cd7a951891, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StarterAssets.StarterAssetsInputs
-  cursorLocked: 0
-  cursorInputForLook: 0
+  InputActions: {fileID: 0}
+  m_moveAmt: {x: 0, y: 0}
+  m_lookAmt: {x: 0, y: 0}
+  mouseSensibility: 5
+  m_attackInputWasHeld: 0
 --- !u!114 &883625365
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -916,9 +919,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f728d37cb50b64ed9829eca6197ce429, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ObjectRotation
-  m_x_rotationSpeed: 0
-  m_y_rotationSpeed: 10
-  m_z_rotationSpeed: 0
 --- !u!4 &1055405081
 Transform:
   m_ObjectHideFlags: 0

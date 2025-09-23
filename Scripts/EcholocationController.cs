@@ -243,7 +243,7 @@ namespace StarterAssets
                 ComputeBuffer.CopyCount(currentPointBuffer, currentArgsBuffer, sizeof(uint));
             }
 
-            if (StarterAssetsInputs.Instance?.GetFireInputDown() ?? false)
+            if (InputGlobalManager.Instance?.GetAttackInputDown() ?? false)
             {
                 TriggerEcholocation();
             }
