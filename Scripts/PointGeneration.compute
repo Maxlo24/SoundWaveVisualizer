@@ -19,7 +19,7 @@ AppendStructuredBuffer<PointData> _ProcessedPointsBuffer;
 
 float _PropagationSpeed;
 float _Time;
-int _RayCount;
+uint _RayCount;
 
 [numthreads(64,1,1)]
 void GeneratePoints (uint3 id : SV_DispatchThreadID)
