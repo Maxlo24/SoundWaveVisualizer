@@ -13,6 +13,11 @@
     },
     "samples": [
         {
+            "displayName": "Shaders",
+            "description": "Contains shaders assets",
+            "path": "Shaders"
+        },
+        {
             "displayName": "Demo samples",
             "description": "Contains demo assets",
             "path": "Demo~"
