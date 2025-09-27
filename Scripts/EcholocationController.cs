@@ -280,7 +280,7 @@ namespace StarterAssets
 
             Quaternion randomRotation = Quaternion.Euler(randomVerticalAngle, randomHorizontalAngle, 0);
 
-            return randomRotation * transform.forward;
+            return transform.rotation * randomRotation * Vector3.forward;
         }
 
 
