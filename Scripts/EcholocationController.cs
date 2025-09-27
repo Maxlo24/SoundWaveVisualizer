@@ -46,7 +46,7 @@ namespace StarterAssets
         }
 
         [Header("Configuration")]
-        public int rayCount = 50000;
+        public int rayCount = 5000;
         public float maxDistance = 100f;
         public float pointLifetime = 3.0f;
         [Tooltip("The maximum number of waves to stack before overwriting the oldest.")]
@@ -62,7 +62,7 @@ namespace StarterAssets
 
         [Tooltip("The vertical field of view for the cone in degrees.")]
         [Range(1, 180)]
-        public float verticalFOV = 60f;
+        public float verticalFOV = 80f;
         #endregion
 
 
