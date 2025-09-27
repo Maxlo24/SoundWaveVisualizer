@@ -290,10 +290,16 @@ namespace StarterAssets
             var currentResults = resultsPool[nextWaveIndex];
 
 
+            QueryParameters queryParams = new QueryParameters(
+                layerMask: ~0,           // ~0 means hit all layers. You can change this too.
+                hitTriggers: QueryTriggerInteraction.Ignore,      // <-- THE IMPORTANT PART! This tells the physics engine to ignore triggers.
+                hitBackfaces: true
+            );
+
             Vector3 origin = transform.position;
             for (int i = 0; i < rayCount; i++)
             {
-                currentCommands[i] = new RaycastCommand(origin, GetRandomDirectionInCone(), QueryParameters.Default, maxDistance);
+                currentCommands[i] = new RaycastCommand(origin, GetRandomDirectionInCone(), queryParams, maxDistance);
             }
 
             var handle = RaycastCommand.ScheduleBatch(currentCommands, currentResults, 1);
