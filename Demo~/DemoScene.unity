@@ -782,7 +782,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: df31c6690d0cb4e0287bc2cd7a951891, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StarterAssets.StarterAssetsInputs
-  InputActions: {fileID: 0}
+  InputActions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_moveAmt: {x: 0, y: 0}
   m_lookAmt: {x: 0, y: 0}
   mouseSensibility: 5
