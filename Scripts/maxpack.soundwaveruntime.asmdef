@@ -1,0 +1,16 @@
+{
+    "name": "maxpack.soundwaveruntime",
+    "rootNamespace": "",
+    "references": [
+        "GUID:9ecb4313afb7c47519761d70802ddcdd"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
